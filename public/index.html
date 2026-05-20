@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOMOTIC HUB — Domótica</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<body>
+<div class="scan-overlay"></div>
+
+<div id="auth-screen" class="screen active">
+  <div class="auth-box">
+    <div class="logo">
+      <h1>SMART<span>HOME</span></h1>
+      <p>Sistema Domótico v2.4</p>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('login')">Iniciar Sesión</button>
+      <button class="tab-btn" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" id="login-user" placeholder="tu_usuario" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-pass" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">ACCEDER</button>
+      <div id="login-msg"></div>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Nombre de usuario</label>
+        <input type="text" id="reg-user" placeholder="tu_usuario">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg-pass" placeholder="••••••••">
+      </div>
+      <button class="btn-primary" onclick="doRegister()">REGISTRARSE</button>
+      <div id="reg-msg"></div>
+    </div>
+  </div>
+</div>
+
+<div id="houses-screen" class="screen">
+  <header>
+    <h1>SMARTHOME</h1>
+    <div class="header-right">
+      <div class="user-badge">Bienvenido, <span id="header-user">usuario</span></div>
+      <button class="btn-logout" onclick="doLogout()">SALIR</button>
+    </div>
+  </header>
+  <div class="content">
+    <p class="section-title">Mi Inventario — <span id="house-count">0</span> casas conectadas</p>
+    <div class="houses-grid" id="houses-grid">
+    </div>
+  </div>
+</div>
+
+<div id="control-screen" class="screen">
+  <header>
+    <h1>SMARTHOME</h1>
+    <div class="header-right">
+      <div class="user-badge">Bienvenido, <span id="ctrl-user">usuario</span></div>
+      <button class="btn-logout" onclick="doLogout()">SALIR</button>
+    </div>
+  </header>
+  <div class="content">
+    <div class="control-header">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <div>
+        <div class="control-title">Casa <span id="ctrl-house-name">-</span></div>
+        <div style="font-size:0.75rem;color:var(--muted);letter-spacing:1px;margin-top:2px;" id="ctrl-house-ip">–</div>
+      </div>
+    </div>
+    <div class="control-grid">
+
+      <div class="control-panel">
+        <div class="panel-header">
+          <span class="panel-icon">💡</span>
+          <h3>Iluminación</h3>
+        </div>
+        <div class="panel-body">
+          <div class="light-row">
+            <span class="light-label"><span class="light-bulb" id="bulb-bano"></span> Baño</span>
+            <label class="toggle"><input type="checkbox" onchange="toggleLight('bano',this)"><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+          <div class="light-row">
+            <span class="light-label"><span class="light-bulb" id="bulb-cocina"></span> Cocina</span>
+            <label class="toggle"><input type="checkbox" onchange="toggleLight('cocina',this)"><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+          <div class="light-row">
+            <span class="light-label"><span class="light-bulb" id="bulb-hall"></span> Hall</span>
+            <label class="toggle"><input type="checkbox" onchange="toggleLight('hall',this)"><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+          <div class="light-row">
+            <span class="light-label"><span class="light-bulb" id="bulb-habitacion"></span> Habitación</span>
+            <label class="toggle"><input type="checkbox" onchange="toggleLight('habitacion',this)"><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+          <div class="light-row">
+            <span class="light-label"><span class="light-bulb" id="bulb-salon"></span> Salón</span>
+            <label class="toggle"><input type="checkbox" onchange="toggleLight('salon',this)"><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <div class="panel-header">
+          <span class="panel-icon">🚗</span>
+          <h3>Garaje</h3>
+        </div>
+        <div class="panel-body">
+          <div class="garage-visual">
+            <div class="garage-door" id="garage-door">
+              <div class="garage-lines">
+                <div class="garage-line"></div>
+                <div class="garage-line"></div>
+                <div class="garage-line"></div>
+                <div class="garage-line"></div>
+              </div>
+            </div>
+            <div class="garage-status" id="garage-status">CERRADO</div>
+          </div>
+          <div class="garage-btns">
+            <button class="btn-garage btn-open" onclick="setGarage(true)">▲ ABRIR</button>
+            <button class="btn-garage btn-close" onclick="setGarage(false)">▼ CERRAR</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <div class="panel-header">
+          <span class="panel-icon">🏊</span>
+          <h3>Luces Piscina</h3>
+        </div>
+        <div class="panel-body">
+          <div class="pool-visual" id="pool-visual">
+            <div class="pool-waves">
+              <div class="pool-wave"></div>
+              <div class="pool-wave"></div>
+            </div>
+          </div>
+          <div class="pool-btns">
+            <button class="btn-pool btn-pool-off" id="pool-off" onclick="setPool('off')">⭘ OFF</button>
+            <button class="btn-pool btn-pool-blue" id="pool-blue" onclick="setPool('blue')">💙 AZUL</button>
+            <button class="btn-pool btn-pool-red" id="pool-red" onclick="setPool('red')">🔴 ROJO</button>
+            <button class="btn-pool btn-pool-party" id="pool-party" onclick="setPool('party')">✨ FIESTA</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h2>AÑADIR CASA</h2>
+    <div class="form-group">
+      <label>Nombre de la casa</label>
+      <input type="text" id="add-name" placeholder="Casa Principal">
+    </div>
+    <div class="form-group">
+      <label>IP de la Raspberry Pi</label>
+      <input type="text" id="add-ip" placeholder="192.168.1.100">
+    </div>
+    <button class="btn-primary" onclick="connectHouse()">CONECTAR</button>
+    <div id="connecting-status" style="display:none">
+      <div class="connecting-bar"><div class="connecting-fill" id="connecting-fill"></div></div>
+      <div class="connecting-text" id="connecting-text">Estableciendo conexión...</div>
+    </div>
+    <div id="add-msg"></div>
+    <button class="btn-cancel" onclick="closeAddModal()">CANCELAR</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal">
+    <h2>VERIFICACIÓN DE SEGURIDAD</h2>
+    <p style="text-align:center;font-size:0.8rem;color:var(--muted);letter-spacing:1px;">Introduce el PIN de 4 dígitos</p>
+    <div class="pin-display">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('del')" style="font-size:0.9rem;">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key" onclick="pinKey('ok')" style="font-size:0.9rem;background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent)">OK</button>
+    </div>
+    <div id="pin-error"></div>
+    <button class="btn-cancel" onclick="closePinModal()">CANCELAR</button>
+  </div>
+</div>
+
+<script type="module">
+
+//importo la bd desde internet
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+
+// 2. Tu configuración (mantenla igual)
+const firebaseConfig = {
+  apiKey: "AIzaSyBUSnPFXimzBZRQ8vLTTRu7KCuzHCBnlv0",
+  authDomain: "domotic-hub-10c05.firebaseapp.com",
+  projectId: "domotic-hub-10c05",
+  storageBucket: "domotic-hub-10c05.firebasestorage.app",
+  messagingSenderId: "683636603663",
+  appId: "1:683636603663:web:5cd2e46e997c71ac4fdc7a",
+  measurementId: "G-Y636DT0Z89"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app); 
+
+
+let users = JSON.parse(localStorage.getItem('sh_users') || '{}');
+let currentUser = null;
+let currentHouseIdx = null;
+let pinBuffer = '';
+let pendingHouse = null;
+
+const CORRECT_PIN = '1234';
+const MAX_SLOTS = 6;
+
+function getHouses() {
+  const key = 'sh_houses_' + currentUser;
+  return JSON.parse(localStorage.getItem(key) || '[]');
+}
+function saveHouses(h) {
+  localStorage.setItem('sh_houses_' + currentUser, JSON.stringify(h));
+}
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
+  document.getElementById('login-form').style.display = tab==='login'?'':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'':'none';
+}
+function msg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+window.doLogin = async function() {
+  const e = document.getElementById('login-user').value.trim(); // Usaremos el email como usuario
+  const p = document.getElementById('login-pass').value;
+  if (!e || !p) return msg('login-msg', 'Rellena todos los campos', 'error');
+  
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, e, p);
+    // ¡El onAuthStateChanged de abajo se encargará del resto!
+  } catch (error) {
+    msg('login-msg', 'Error: Correo o contraseña incorrectos', 'error');
+    console.error(error);
+  }
+};
+
+window.doRegister = async function() {
+  const e = document.getElementById('reg-email').value.trim();
+  const p = document.getElementById('reg-pass').value;
+  if (!e || !p) return msg('reg-msg', 'Rellena todos los campos', 'error');
+  if (p.length < 6) return msg('reg-msg', 'Contraseña mínimo 6 caracteres', 'error'); // Firebase exige 6
+  
+  try {
+    await createUserWithEmailAndPassword(auth, e, p);
+    msg('reg-msg', '¡Cuenta creada con éxito!', 'success');
+    setTimeout(() => window.switchTab('login'), 1500);
+  } catch (error) {
+    msg('reg-msg', 'Error al crear la cuenta. Puede que el email ya exista.', 'error');
+    console.error(error);
+  }
+};
+
+window.doLogout = async function() {
+  try {
+    await signOut(auth);
+    currentUser = null;
+    showScreen('auth-screen');
+  } catch (error) {
+    console.error("Error al salir:", error);
+  }
+};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showHouses() {
+  document.getElementById('header-user').textContent = currentUser;
+  renderHouses();
+  showScreen('houses-screen');
+}
+function renderHouses() {
+  const houses = getHouses();
+  const grid = document.getElementById('houses-grid');
+  grid.innerHTML = '';
+  // Existing houses
+  houses.forEach((h,i) => {
+    const card = document.createElement('div');
+    card.className = 'house-card connected';
+    card.innerHTML = `
+      <div class="status-dot"></div>
+      <div class="house-icon">🏠</div>
+      <div class="house-name">${h.name}</div>
+      <div class="house-ip">${h.ip}</div>
+    `;
+    card.onclick = () => enterHouse(i);
+    grid.appendChild(card);
+  });
+  // Empty slots
+  const empty = MAX_SLOTS - houses.length;
+  for (let i=0; i<empty; i++) {
+    const card = document.createElement('div');
+    card.className = 'house-card';
+    card.innerHTML = `<div class="add-icon">+</div><div class="add-label">Añadir Casa</div>`;
+    card.onclick = openAddModal;
+    grid.appendChild(card);
+  }
+  document.getElementById('house-count').textContent = houses.length;
+}
+
+function openAddModal() {
+  document.getElementById('add-name').value='';
+  document.getElementById('add-ip').value='';
+  document.getElementById('add-msg').textContent='';
+  document.getElementById('connecting-status').style.display='none';
+  document.getElementById('add-modal').classList.add('open');
+}
+
+window.closeAddModal = function() {
+  document.getElementById('add-modal').classList.remove('open');
+}
+
+window.connectHouse = function() {
+  const name = document.getElementById('add-name').value.trim();
+  const ip = document.getElementById('add-ip').value.trim();
+  if (!name||!ip) 
+  return msg('add-msg','Introduce nombre e IP','error');
+  const ipReg = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipReg.test(ip)) 
+  return msg('add-msg','IP no válida (ej: 192.168.1.100)','error');
+  document.getElementById('add-msg').textContent='';
+  document.getElementById('connecting-status').style.display='';
+  let pct = 0;
+  const fill = document.getElementById('connecting-fill');
+  const txt = document.getElementById('connecting-text');
+  const steps = ['Conectando a la red...','Localizando Raspberry Pi...','Estableciendo enlace seguro...','Conectado — solicitando autenticación...'];
+  let step = 0;
+  const interval = setInterval(()=>{
+    pct += 2;
+    fill.style.width = pct + '%';
+    if (pct % 25 === 0 && step < steps.length) txt.textContent = steps[step++];
+    if (pct >= 100) {
+      clearInterval(interval);
+      pendingHouse = { name, ip };
+      setTimeout(()=>{
+        window.closeAddModal();
+        openPinModal();
+      }, 400);
+    }
+  }, 40);
+}
+
+function openPinModal() {
+  pinBuffer = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent='';
+  document.getElementById('pin-modal').classList.add('open');
+}
+
+window.closePinModal = function() {
+  document.getElementById('pin-modal').classList.remove('open');
+  pendingHouse = null;
+}
+
+window.pinKey = function(k) {
+  if (k==='del') { pinBuffer = pinBuffer.slice(0,-1); }
+  else if (k==='ok') { verifyPin(); return; }
+  else if (pinBuffer.length < 4) { pinBuffer += k; }
+  updatePinDots();
+  if (pinBuffer.length===4) verifyPin();
+}
+
+function updatePinDots() {
+  for (let i=0;i<4;i++) {
+    document.getElementById('pd'+i).classList.toggle('filled', i<pinBuffer.length);
+  }
+}
+
+function verifyPin() {
+  if (pinBuffer === CORRECT_PIN) {
+    document.getElementById('pin-modal').classList.remove('open');
+    if (pendingHouse) {
+      const houses = getHouses();
+      houses.push(pendingHouse);
+      saveHouses(houses);
+      pendingHouse = null;
+      renderHouses();
+    } else {
+      // Entrando a casa existente
+      loadControlScreen();
+    }
+  } else {
+    document.getElementById('pin-error').innerHTML='<div class="pin-error">PIN incorrecto. Inténtalo de nuevo.</div>';
+    pinBuffer='';
+    updatePinDots();
+  }
+}
+
+// ─── ENTER HOUSE ──────────────────────────────────────────
+function enterHouse(idx) {
+  currentHouseIdx = idx;
+  pendingHouse = null;
+  openPinModal();
+}
+
+function loadControlScreen() {
+  const houses = getHouses();
+  const h = houses[currentHouseIdx];
+  document.getElementById('ctrl-user').textContent = currentUser;
+  document.getElementById('ctrl-house-name').textContent = h.name;
+  document.getElementById('ctrl-house-ip').textContent = '📡 ' + h.ip;
+  // Reset all controls
+  document.querySelectorAll('.toggle input').forEach(t=>{ t.checked=false; });
+  document.querySelectorAll('.light-bulb').forEach(b=>b.classList.remove('on'));
+  window.setGarage(false, true);
+  window.setPool('off', true);
+  showScreen('control-screen');
+}
+
+window.goBack = function() {
+  showScreen('houses-screen');
+}
+
+// ─── LIGHTS ───────────────────────────────────────────────
+window.toggleLight = async function(room, checkbox) {
+  console.log("¡HOLA! El botón de " + room + " ha sido pulsado"); 
+  
+  // 1. Efecto visual en la web (el que ya tenías)
+  const bulb = document.getElementById('bulb-'+room);
+  bulb.classList.toggle('on', checkbox.checked);
+
+  // 2. Enviar la orden a Firebase
+  try {
+    // Apuntamos al documento de esa habitación dentro de la colección "luces"
+    const referenciaLuz = doc(window.db, "luces", room);
+    
+    // Escribimos el nuevo estado en la nube
+    await setDoc(referenciaLuz, { estado: checkbox.checked });
+    
+    console.log(`[NUBE] Luz ${room} actualizada a ${checkbox.checked}`);
+  } catch (error) {
+    console.error("[ERROR NUBE] No se pudo actualizar la luz: ", error);
+  }
+}
+
+// ─── GARAGE ───────────────────────────────────────────────
+let garageOpen = false;
+window.setGarage = function(open, silent=false) {
+  garageOpen = open;
+  const door = document.getElementById('garage-door');
+  const status = document.getElementById('garage-status');
+  door.classList.toggle('open', open);
+  status.textContent = open ? 'ABIERTO' : 'CERRADO';
+  status.className = 'garage-status' + (open?' open-text':'');
+
+  if (silent) return; // llamada interna al resetear UI, no enviar petición
+
+  const houses = getHouses();
+  const h = houses[currentHouseIdx];
+  const baseUrl = h ? `http://${h.ip}:5000` : '';
+  const accion = open ? 'abrir' : 'cerrar';
+
+  fetch(baseUrl + '/api/garaje', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ accion: accion })
+  })
+  .then(r => r.json())
+  .then(d => console.log(`[GARAJE] ${accion}:`, d))
+  .catch(err => console.error('[GARAJE] Error:', err));
+}
+
+//PISCINA
+let poolMode = 'off';
+window.setPool = function(mode, silent=false) {
+  poolMode = mode;
+  const pv = document.getElementById('pool-visual');
+  pv.className = 'pool-visual';
+  if (mode==='blue') pv.classList.add('blue-mode');
+  if (mode==='red') pv.classList.add('red-mode');
+  if (mode==='party') pv.classList.add('party-mode');
+  ['off','blue','red','party'].forEach(m=>{
+    document.getElementById('pool-'+m).classList.toggle('active', m===mode);
+  });
+}
+
+if (!users['admin']) {
+  users['admin'] = { pass: '1234', email: 'admin@smarthome.es' };
+  localStorage.setItem('sh_users', JSON.stringify(users));
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // El usuario está logueado
+    currentUser = user.email.split('@')[0]; // Usamos la parte antes del @ como nombre
+    showHouses();
+  } else {
+    // El usuario no está logueado
+    currentUser = null;
+    showScreen('auth-screen');
+  }
+});
+</script>
+</body>
+<style>
+  :root {
+    --bg: #050a0f;
+    --panel: #0a1520;
+    --panel2: #0d1c2e;
+    --accent: #00d4ff;
+    --accent2: #0088cc;
+    --green: #00ff88;
+    --red: #ff3366;
+    --yellow: #ffcc00;
+    --purple: #aa44ff;
+    --blue-pool: #0066ff;
+    --red-pool: #ff2200;
+    --text: #c8e0f0;
+    --muted: #4a6a8a;
+    --border: rgba(0,212,255,0.15);
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+    --glow-green: 0 0 20px rgba(0,255,136,0.4);
+    --glow-red: 0 0 20px rgba(255,51,102,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,136,204,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { display: none; position: relative; z-index: 1; }
+  .screen.active { display: flex; flex-direction: column; min-height: 100vh; }
+
+  #auth-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .auth-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--glow), inset 0 1px 0 rgba(0,212,255,0.1);
+    animation: fadeInUp 0.5s ease;
+  }
+  .logo {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .logo h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: var(--glow);
+    letter-spacing: 4px;
+  }
+  .logo span { color: var(--text); }
+  .logo p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    margin-top: 0.3rem;
+    text-transform: uppercase;
+  }
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .form-group input {
+    width: 100%;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .form-group input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,212,255,0.2);
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: var(--glow);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 30px rgba(0,212,255,0.5);
+  }
+  .msg { font-size: 0.85rem; text-align: center; margin-top: 1rem; padding: 0.5rem; border-radius: 4px; }
+  .msg.error { color: var(--red); background: rgba(255,51,102,0.1); }
+  .msg.success { color: var(--green); background: rgba(0,255,136,0.1); }
+
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+  .header-right { display: flex; align-items: center; gap: 1.5rem; }
+  .user-badge {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+  .user-badge span { color: var(--accent); }
+  .btn-logout {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.4rem 0.9rem;
+    border-radius: 4px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  #houses-screen .content {
+    padding: 2.5rem 2rem;
+    flex: 1;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .section-title span { color: var(--accent); }
+  .houses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+  }
+  .house-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .house-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(0,212,255,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .house-card:hover { border-color: var(--accent); box-shadow: var(--glow); transform: translateY(-3px); }
+  .house-card:hover::before { opacity: 1; }
+  .house-card.connected {
+    border-color: var(--green);
+    box-shadow: var(--glow-green);
+  }
+  .add-icon {
+    width: 56px; height: 56px;
+    border: 2px dashed var(--muted);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    color: var(--muted);
+    transition: all 0.3s;
+    margin-bottom: 0.75rem;
+  }
+  .house-card:hover .add-icon {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .add-label {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .house-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+  }
+  .house-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+  .house-ip {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    position: absolute;
+    top: 12px; right: 12px;
+    animation: pulse 2s infinite;
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--glow);
+    animation: fadeInUp 0.3s ease;
+  }
+  .modal h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    color: var(--accent);
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .pin-display {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+  }
+  .pin-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--muted);
+    background: transparent;
+    transition: all 0.3s;
+  }
+  .pin-dot.filled {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,212,255,0.6);
+  }
+  .pin-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+  .pin-key {
+    padding: 1rem;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .pin-key:hover { background: rgba(0,212,255,0.15); border-color: var(--accent); }
+  .pin-key:active { transform: scale(0.95); }
+  .btn-cancel {
+    width: 100%;
+    padding: 0.75rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-top: 0.75rem;
+    transition: all 0.3s;
+  }
+  .btn-cancel:hover { border-color: var(--red); color: var(--red); }
+  .pin-error { color: var(--red); text-align: center; font-size: 0.85rem; margin-top: 0.5rem; animation: shake 0.3s; }
+
+  #control-screen .content {
+    padding: 2rem;
+    flex: 1;
+  }
+  .control-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .control-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2rem;
+    color: var(--text);
+  }
+  .control-title span { color: var(--accent); }
+  .control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    max-width: 1100px;
+  }
+  .control-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 1rem 1.5rem;
+    background: rgba(0,212,255,0.05);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .panel-header h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .panel-icon { font-size: 1.2rem; }
+  .panel-body { padding: 1.5rem; }
+
+  .light-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0,212,255,0.07);
+  }
+  .light-row:last-child { border-bottom: none; }
+  .light-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .light-bulb {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: all 0.4s;
+    flex-shrink: 0;
+  }
+  .light-bulb.on {
+    background: var(--yellow);
+    box-shadow: 0 0 12px rgba(255,204,0,0.7);
+  }
+  .toggle {
+    position: relative;
+    width: 52px; height: 26px;
+    cursor: pointer;
+  }
+  .toggle input { display: none; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    transition: all 0.3s;
+  }
+  .toggle input:checked + .toggle-track {
+    background: rgba(0,212,255,0.3);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,212,255,0.3);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: all 0.3s;
+  }
+  .toggle input:checked ~ .toggle-thumb {
+    transform: translateX(26px);
+    background: var(--accent);
+  }
+
+  .garage-visual {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  .garage-door {
+    width: 120px; height: 80px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s;
+    background: var(--panel2);
+  }
+  .garage-door.open {
+    height: 20px;
+    border-color: var(--green);
+    box-shadow: var(--glow-green);
+  }
+  .garage-door.open .garage-lines { opacity: 0; }
+  .garage-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: opacity 0.3s;
+  }
+  .garage-line {
+    width: 90px; height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+  }
+  .garage-status {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+  }
+  .garage-status.open-text { color: var(--green); }
+  .garage-btns {
+    display: flex;
+    gap: 1rem;
+  }
+  .btn-garage {
+    flex: 1;
+    padding: 0.9rem;
+    border-radius: 8px;
+    border: 1px solid;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .btn-open {
+    background: rgba(0,255,136,0.1);
+    border-color: rgba(0,255,136,0.3);
+    color: var(--green);
+  }
+  .btn-open:hover { background: rgba(0,255,136,0.2); box-shadow: var(--glow-green); }
+  .btn-close {
+    background: rgba(255,51,102,0.1);
+    border-color: rgba(255,51,102,0.3);
+    color: var(--red);
+  }
+  .btn-close:hover { background: rgba(255,51,102,0.2); box-shadow: var(--glow-red); }
+
+  .pool-visual {
+    position: relative;
+    width: 140px; height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: 40px;
+    background: linear-gradient(180deg, #001133, #002266);
+    border: 2px solid rgba(0,100,255,0.3);
+    overflow: hidden;
+    transition: all 0.5s;
+  }
+  .pool-visual.blue-mode {
+    background: linear-gradient(180deg, #001166, #0033bb);
+    border-color: var(--blue-pool);
+    box-shadow: 0 0 30px rgba(0,102,255,0.5);
+  }
+  .pool-visual.red-mode {
+    background: linear-gradient(180deg, #330000, #aa0000);
+    border-color: var(--red-pool);
+    box-shadow: 0 0 30px rgba(255,34,0,0.5);
+  }
+  .pool-visual.party-mode {
+    animation: partyPool 1s infinite;
+    border-color: var(--purple);
+  }
+  .pool-waves {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 30px;
+  }
+  .pool-wave {
+    position: absolute;
+    bottom: 0; left: -50%;
+    width: 200%;
+    height: 20px;
+    border-radius: 40%;
+    background: rgba(255,255,255,0.05);
+    animation: wave 3s linear infinite;
+  }
+  .pool-wave:nth-child(2) { animation-delay: -1s; animation-duration: 2.5s; }
+  .pool-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .btn-pool {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.8rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .btn-pool-off { background: rgba(255,255,255,0.03); border-color: var(--border); color: var(--muted); }
+  .btn-pool-blue { background: rgba(0,102,255,0.1); border-color: rgba(0,102,255,0.3); color: #4499ff; }
+  .btn-pool-blue:hover, .btn-pool-blue.active { background: rgba(0,102,255,0.25); box-shadow: 0 0 15px rgba(0,102,255,0.4); }
+  .btn-pool-red { background: rgba(255,34,0,0.1); border-color: rgba(255,34,0,0.3); color: #ff6644; }
+  .btn-pool-red:hover, .btn-pool-red.active { background: rgba(255,34,0,0.25); box-shadow: 0 0 15px rgba(255,34,0,0.4); }
+  .btn-pool-party { background: rgba(170,68,255,0.1); border-color: rgba(170,68,255,0.3); color: var(--purple); }
+  .btn-pool-party:hover, .btn-pool-party.active { background: rgba(170,68,255,0.25); box-shadow: 0 0 15px rgba(170,68,255,0.4); }
+  .btn-pool.active { transform: scale(1.05); }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+  }
+  @keyframes wave {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes partyPool {
+    0% { background: linear-gradient(180deg, #330066, #0033bb); border-color: #aa44ff; box-shadow: 0 0 30px rgba(170,68,255,0.5); }
+    33% { background: linear-gradient(180deg, #001166, #0033bb); border-color: #0066ff; box-shadow: 0 0 30px rgba(0,102,255,0.5); }
+    66% { background: linear-gradient(180deg, #330000, #aa0000); border-color: #ff2200; box-shadow: 0 0 30px rgba(255,34,0,0.5); }
+    100% { background: linear-gradient(180deg, #330066, #0033bb); border-color: #aa44ff; box-shadow: 0 0 30px rgba(170,68,255,0.5); }
+  }
+  @keyframes scanLine {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .scan-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(transparent, rgba(0,212,255,0.1), transparent);
+    animation: scanLine 8s linear infinite;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .connecting-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 1.5rem 0;
+    overflow: hidden;
+  }
+  .connecting-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+  .connecting-text {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+</style>
+</head>
+
+</html>
