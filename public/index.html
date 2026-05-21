@@ -455,23 +455,21 @@ window.goBack = function() {
 
 // ─── LIGHTS ───────────────────────────────────────────────
 window.toggleLight = async function(room, checkbox) {
-  console.log("¡HOLA! El botón de " + room + " ha sido pulsado"); 
+  console.log("1. Botón " + room + " pulsado. Estado: " + checkbox.checked);
   
-  // 1. Efecto visual en la web (el que ya tenías)
   const bulb = document.getElementById('bulb-'+room);
   bulb.classList.toggle('on', checkbox.checked);
 
-  // 2. Enviar la orden a Firebase
   try {
-    // Apuntamos al documento de esa habitación dentro de la colección "luces"
-    const referenciaLuz = doc(window.db, "luces", room);
+    console.log("2. Enviando datos a Firestore (Proyecto: domotic-hub-10c05)...");
     
-    // Escribimos el nuevo estado en la nube
+    // Aseguramos que coge la base de datos correcta
+    const referenciaLuz = doc(db, "luces", room);
     await setDoc(referenciaLuz, { estado: checkbox.checked });
     
-    console.log(`[NUBE] Luz ${room} actualizada a ${checkbox.checked}`);
+    console.log("3. ¡ÉXITO! La luz ya está en la base de datos.");
   } catch (error) {
-    console.error("[ERROR NUBE] No se pudo actualizar la luz: ", error);
+    console.error("3. ERROR FATAL AL GUARDAR:", error);
   }
 }
 
