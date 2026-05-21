@@ -454,6 +454,25 @@ window.goBack = function() {
 }
 
 // ─── LIGHTS ───────────────────────────────────────────────
+// window.toggleLight = async function(room, checkbox) {
+//   console.log("1. Botón " + room + " pulsado. Estado: " + checkbox.checked);
+  
+//   const bulb = document.getElementById('bulb-'+room);
+//   bulb.classList.toggle('on', checkbox.checked);
+
+//   try {
+//     console.log("2. Enviando datos a Firestore (Proyecto: domotic-hub-10c05)...");
+    
+//     // Aseguramos que coge la base de datos correcta
+//     const referenciaLuz = doc(db, "luces", room);
+//     await setDoc(referenciaLuz, { estado: checkbox.checked });
+    
+//     console.log("3. ¡ÉXITO! La luz ya está en la base de datos.");
+//   } catch (error) {
+//     console.error("3. ERROR FATAL AL GUARDAR:", error);
+//   }
+// }
+
 window.toggleLight = async function(room, checkbox) {
   console.log("1. Botón " + room + " pulsado. Estado: " + checkbox.checked);
   
@@ -462,14 +481,11 @@ window.toggleLight = async function(room, checkbox) {
 
   try {
     console.log("2. Enviando datos a Firestore (Proyecto: domotic-hub-10c05)...");
-    
-    // Aseguramos que coge la base de datos correcta
     const referenciaLuz = doc(db, "luces", room);
     await setDoc(referenciaLuz, { estado: checkbox.checked });
-    
-    console.log("3. ¡ÉXITO! La luz ya está en la base de datos.");
+    console.log("3. ¡ÉXITO! La luz ya está en la base de datos."); // ← ¿aparece esto?
   } catch (error) {
-    console.error("3. ERROR FATAL AL GUARDAR:", error);
+    console.error("3. ERROR:", error.code, error.message); // ← ¿o esto?
   }
 }
 

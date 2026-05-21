@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from time import sleep
 import signal 
 import sys
+import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 import threading
@@ -62,9 +63,8 @@ def hardware_controlar_luz(habitacion, estado):
 
 print("Conectando a la nube de Firebase...")
 
-cred = credentials.Certificate("domotic-hub-10c05-firebase-adminsdk-fbsvc-2879df49b1.json") 
-firebase_admin.initialize_app(cred)
-db = firestore.client()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+cred = credentials.Certificate(os.path.join(BASE_DIR, "..", "domotic-hub-10c05-firebase-adminsdk-fbsvc-2879df49b1.json"))
 print("¡Conectado a la base de datos correctamente!")
 
 def on_snapshot(doc_snapshot, changes, read_time):
